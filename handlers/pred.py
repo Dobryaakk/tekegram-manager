@@ -1,11 +1,8 @@
 from aiogram import types, Dispatcher
-from database.db import Database_pred, Database_pred_user, Database_pred_dead
+
+from create import db_pred, db_pred_user, db_pred_dead
 from create import bot
 from antiflood import rate_limit
-
-db_pred = Database_pred('bd.db')
-db_pred_user = Database_pred_user('bd.db')
-db_pred_dead = Database_pred_dead('bd.db')
 
 
 @rate_limit(limit=2)

@@ -1,9 +1,8 @@
 from aiogram import executor
+
 from create import dp
 from filters import IsAdminFilter
-
 from handlers import client, settings, vipivka, pred, chat_off_on, chat_member, ban_kick
-
 from handlers import mute
 
 
@@ -15,7 +14,10 @@ def start():
     chat_off_on.register_chat_off_on(dp)
     mute.register_mute(dp)
     settings.register_callback(dp)
-    client.register_client(dp)
+
+    client.register_top_commands(dp)
+    client.register_commands(dp)
+    client.register_user_all(dp)
 
 
 if __name__ == "__main__":

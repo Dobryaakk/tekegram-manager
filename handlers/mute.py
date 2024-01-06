@@ -1,14 +1,15 @@
 import re
-from antiflood import rate_limit
-
-from aiogram import types, Dispatcher
-from database.db import Database_mute
-from create import bot
 import datetime
 import time
 
-db_mute = Database_mute('bd.db')
+from antiflood import rate_limit
+from aiogram import types, Dispatcher
+
+from create import bot, mute_db
+
+
 mut_sec = 0
+
 
 @rate_limit(limit=2)
 async def mute_user(message: types.Message):
@@ -42,42 +43,34 @@ async def mute_user(message: types.Message):
             elif selected_unit == "нед":
                 mut_sec *= 604800
 
-        chat_admins = await bot.get_chat_administrators(message.chat.id)
-        user_id = int(message.from_user.id)
-        admin_ids = [admin.user.id for admin in chat_admins]
         chat_id = message.chat.id
 
-        if user_id in admin_ids:
-            if message.reply_to_message:
-                user_id = message.reply_to_message.from_user.id
+        if message.reply_to_message:
+            user_id = message.reply_to_message.from_user.id
 
-                until_date = int(time.time()) + mut_sec
+            until_date = int(time.time()) + mut_sec
 
-                db_mute.add_mute(user_id, until_date)
+            mute_db.add_mute(user_id, until_date)
 
-                permissions = types.ChatPermissions(
-                    can_send_messages=False,
-                    can_send_media_messages=False,
-                    can_send_polls=False,
-                    can_send_other_messages=False,
-                    can_add_web_page_previews=False,
-                    can_change_info=False,
-                    can_invite_users=False,
-                    can_pin_messages=False,
-                )
+            permissions = types.ChatPermissions(
+                can_send_messages=False,
+                can_send_media_messages=False,
+                can_send_polls=False,
+                can_send_other_messages=False,
+                can_add_web_page_previews=False,
+                can_change_info=False,
+                can_invite_users=False,
+                can_pin_messages=False,
+            )
 
-                await bot.restrict_chat_member(chat_id, user_id, permissions, until_date=until_date)
+            await bot.restrict_chat_member(chat_id, user_id, permissions, until_date=until_date)
 
-                until_date_str = datetime.datetime.fromtimestamp(until_date).strftime('%m-%d | %H:%M')
+            until_date_str = datetime.datetime.fromtimestamp(until_date).strftime('%m-%d | %H:%M')
 
-                await message.reply(f"в муте до {until_date_str}")
-
-            else:
-                await message.reply('Команда должна быть ответом на сообщение.')
+            await message.reply(f"в муте до {until_date_str}")
 
         else:
-            await message.reply("У вас недостаточно прав администратора")
-
+            await message.reply('Команда должна быть ответом на сообщение.')
     else:
         await message.reply(
             "Неправильный формат.")
@@ -85,34 +78,28 @@ async def mute_user(message: types.Message):
 
 @rate_limit(limit=2)
 async def unmute_user(message: types.Message):
-    chat_admins = await bot.get_chat_administrators(message.chat.id)
-    user_id = int(message.from_user.id)
-    admin_ids = [admin.user.id for admin in chat_admins]
-    if user_id in admin_ids:
-        if message.reply_to_message:
-            user_id = message.reply_to_message.from_user.id
-            chat_id = message.chat.id
 
-            permissions = types.ChatPermissions(
-                can_send_messages=True,
-                can_send_media_messages=True,
-                can_send_polls=True,
-                can_send_other_messages=True,
-                can_add_web_page_previews=True,
-                can_change_info=True,
-                can_invite_users=True,
-                can_pin_messages=True,
-            )
+    if message.reply_to_message:
+        user_id = message.reply_to_message.from_user.id
+        chat_id = message.chat.id
 
-            await bot.restrict_chat_member(chat_id, user_id, permissions)
-            await message.reply("Пользователь больше не в муте")
-        else:
-            await message.reply("Команда должна быть ответом на сообщение")
+        permissions = types.ChatPermissions(
+            can_send_messages=True,
+            can_send_media_messages=True,
+            can_send_polls=True,
+            can_send_other_messages=True,
+            can_add_web_page_previews=True,
+            can_change_info=True,
+            can_invite_users=True,
+            can_pin_messages=True,
+        )
 
+        await bot.restrict_chat_member(chat_id, user_id, permissions)
+        await message.reply("Пользователь больше не в муте")
     else:
-        await message.reply("У вас нет прав администратора.")
+        await message.reply("Команда должна быть ответом на сообщение")
 
 
 def register_mute(dp: Dispatcher):
-    dp.register_message_handler(mute_user, commands=['mute'])
-    dp.register_message_handler(unmute_user, text=['/unmute', 'говори'])
+    dp.register_message_handler(mute_user, is_admin=True, commands=['mute'])
+    dp.register_message_handler(unmute_user, is_admin=True, text=['/unmute', 'говори'])

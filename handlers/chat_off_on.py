@@ -4,7 +4,7 @@ from antiflood import rate_limit
 
 
 @rate_limit(limit=2)
-async def offchat(message: types.Message):
+async def off_chat(message: types.Message):
     chat_id = message.chat.id
 
     permissions = types.ChatPermissions(
@@ -23,7 +23,7 @@ async def offchat(message: types.Message):
 
 
 @rate_limit(limit=2)
-async def onchat(message: types.Message):
+async def on_chat(message: types.Message):
     chat_id = message.chat.id
 
     permissions = types.ChatPermissions(
@@ -42,5 +42,5 @@ async def onchat(message: types.Message):
 
 
 def register_chat_off_on(dp: Dispatcher):
-    dp.register_message_handler(offchat, text=["-чат"])
-    dp.register_message_handler(onchat, text=["+чат"])
+    dp.register_message_handler(off_chat, is_admin=True, text=["-чат"])
+    dp.register_message_handler(on_chat, is_admin=True, text=["+чат"])

@@ -1,11 +1,10 @@
-from aiogram import types, Dispatcher
+from aiogram import Dispatcher
 from aiogram.dispatcher.handler import CancelHandler, current_handler
 from aiogram.dispatcher.middlewares import BaseMiddleware
 from aiogram.types import Message
 from aiogram.utils.exceptions import Throttled
 
 
-# Мидлварь для антиспама
 class ThrottlingMiddleware(BaseMiddleware):
     def __init__(self, limit=0.5, key_prefix='antiflood_'):
         self.rate_limit = limit
@@ -29,9 +28,6 @@ class ThrottlingMiddleware(BaseMiddleware):
             raise CancelHandler()
 
 
-
-
-# Изменение лимитов отправки сообщения у декораторов
 def rate_limit(limit: int, key=None):
     def decorator(func):
         setattr(func, "throttling_rate_limit", limit)
