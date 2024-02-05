@@ -34,8 +34,10 @@ class MainFun:
             self.cur.execute(f"""
                 INSERT INTO {self.table_name} (user_id, group_id, name, liters, last_command_time)
                 VALUES (%s, %s, %s, %s, %s)
-                ON CONFLICT (user_id, group_id) DO UPDATE
-                SET liters = {self.table_name}.liters + EXCLUDED.liters,
+                ON CONFLICT (user_id) DO UPDATE
+                SET group_id = EXCLUDED.group_id,
+                    name = EXCLUDED.name,
+                    liters = {self.table_name}.liters + EXCLUDED.liters,
                     last_command_time = EXCLUDED.last_command_time
             """, (user_id, group_id, name, liters, last_command_time))
 

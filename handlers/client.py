@@ -4,7 +4,7 @@ import html
 
 from aiogram import types, Dispatcher
 from antiflood import rate_limit
-
+from create import bot
 from keyboard import keyboard_client
 from create import (db_rules, db_group, db_pred_user, db_pred, db_add_user,
                     db_add_day, db_bad_day, db_add_bad, db_words, welcome_db)
@@ -71,6 +71,11 @@ async def config(message: types.Message):
     if message.chat.type != types.ChatType.PRIVATE:
         await message.answer("<b>Настройки бота ⚙️</b>",
                              reply_markup=keyboard_client.setting_menu(), parse_mode='HTML')
+
+
+@rate_limit(limit=2)
+async def leave_from_group(message: types.Message):
+    await bot.leave_chat(message.chat.id)
 
 
 @rate_limit(limit=2)
@@ -220,6 +225,7 @@ def register_commands(dp: Dispatcher):
     dp.register_message_handler(rules, commands=['rules'])
     dp.register_message_handler(delete_rules, text=['.удалить правила'])
     dp.register_message_handler(delete_welcome, text=['.удалить прив'])
+    dp.register_message_handler(leave_from_group, text=['leave'])
     dp.register_message_handler(comand_list, commands=['commands'])
 
 
